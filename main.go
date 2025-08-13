@@ -1,8 +1,8 @@
 package main
 
 import (
-	"ent-notifier/lib"
 	"fmt"
+	"github.com/cubeee/ent-notifier/lib"
 	"slices"
 	"time"
 )

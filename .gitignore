@@ -1,4 +1,4 @@
 .git/
 .idea/
-layers_osrs/
+/layers_osrs/*
 *.iml

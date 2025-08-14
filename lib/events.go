@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"os"
 	"slices"
 	"time"
 )
@@ -39,15 +38,6 @@ type EventsApiEvent struct {
 type EventsApiResponse struct {
 	Items []EventsApiEvent `json:"items"`
 }
-
-var (
-	ApiUrl           = os.Getenv("EVENTS_API_URL")
-	ApiTimeout       = GetEnvInt("EVENTS_API_TIMEOUT", 5)
-	EventsWorld      = GetEnvInt("EVENTS_WORLD", 444)
-	EventsAllowed    = GetEnvList("EVENTS_ALLOWED", ",")
-	UserAgent        = os.Getenv("USER_AGENT")
-	LocationCooldown = GetEnvInt("LOCATION_COOLDOWN", 300)
-)
 
 func GetEvents(lastCheckTime int64, pastEvents []*PastEvent) (*EventsResponse, error) {
 	response, err := getEvents(ApiUrl)

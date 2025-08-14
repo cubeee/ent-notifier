@@ -7,16 +7,9 @@ import (
 	"time"
 )
 
-var (
-	SleepTime            = lib.GetEnvInt("SLEEP_TIME_SECONDS", 5)
-	HistoryLookupSeconds = lib.GetEnvInt("HISTORY_LOOKUP_SECONDS", 15)
-	WebHooksUrl          = lib.GetEnvList("DISCORD_WEBHOOK_URLS", ",")
-	PastEventMaxAge      = lib.GetEnvInt("PAST_EVENT_MAX_AGE", 30*60)
-)
-
 func main() {
 	now := time.Now().Unix()
-	lastCheckTime := now - int64(HistoryLookupSeconds)
+	lastCheckTime := now - int64(lib.HistoryLookupSeconds)
 	pastEvents := make([]*lib.PastEvent, 0)
 
 	for {
@@ -35,11 +28,11 @@ func main() {
 
 		now = time.Now().Unix()
 		pastEvents = slices.DeleteFunc(pastEvents, func(pastEvent *lib.PastEvent) bool {
-			return now-pastEvent.Time > int64(PastEventMaxAge)
+			return now-pastEvent.Time > int64(lib.PastEventMaxAge)
 		})
 
 		lastCheckTime = resp.LatestEventTime
-		time.Sleep(time.Duration(SleepTime) * time.Second)
+		time.Sleep(time.Duration(lib.SleepTime) * time.Second)
 	}
 }
 
@@ -57,7 +50,7 @@ func checkEventsLoop(lastCheckTime int64, pastEvents []*lib.PastEvent) (*lib.Eve
 
 	if len(eventsResponse.NewEvents) > 0 {
 		fmt.Println("\tNew events:", len(eventsResponse.NewEvents))
-		err := lib.NotifyEvents(eventsResponse.NewEvents, WebHooksUrl)
+		err := lib.NotifyEvents(eventsResponse.NewEvents, lib.WebhookUrls)
 		if err != nil {
 			return nil, err
 		}

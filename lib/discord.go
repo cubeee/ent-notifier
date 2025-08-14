@@ -13,11 +13,6 @@ import (
 
 const eventsLocation = "[Log Hunters](https://discord.com/channels/922245627092541450/1166753438177173534)"
 
-var (
-	MapImageWidth  = GetEnvInt("MAP_IMAGE_WIDTH", 400)
-	MapImageHeight = GetEnvInt("MAP_IMAGE_HEIGHT", 250)
-)
-
 func NotifyEvents(events []*Event, webhookUrls []string) error {
 	var embeds []DiscordEmbed
 	var files []DiscordFile

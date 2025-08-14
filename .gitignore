@@ -2,3 +2,4 @@
 .idea/
 /layers_osrs/*
 *.iml
+publish.sh

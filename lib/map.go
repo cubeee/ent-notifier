@@ -9,11 +9,6 @@ import (
 	"os"
 )
 
-var (
-	MapFilePath   = GetEnv("MAP_FILE_PATH", "layers_osrs/mapsquares/-1/2")
-	MapTilePixels = GetEnvInt("MAP_TILE_PIXELS", 4)
-)
-
 func CreateThumbnail(x, y, width, height int) (*image.RGBA, error) {
 	chunkX := (x >> 3) / 8
 	chunkY := (y >> 3) / 8

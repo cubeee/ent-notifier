@@ -4,10 +4,6 @@ import (
 	"image"
 )
 
-var (
-	EventAreaRadius = GetEnvInt("EVENT_AREA_RADIUS", 8)
-)
-
 type Area struct {
 	delegate image.Rectangle
 }

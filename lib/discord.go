@@ -50,7 +50,13 @@ func NotifyEvents(events []*Event, webhookUrls []string) error {
 			Image: &DiscordEmbedImage{
 				Url: fmt.Sprintf("attachment://%s", imageName),
 			},
-		})
+		}
+		if len(EmbedFooter) > 0 {
+			embed.Footer = &DiscordFooter{
+				Text: &EmbedFooter,
+			}
+		}
+		embeds = append(embeds, embed)
 
 		imageBuffer := buffer.Bytes()
 		files = append(files, DiscordFile{

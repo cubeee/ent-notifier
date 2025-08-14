@@ -13,9 +13,9 @@ Run in a Docker container with at least the required environment variables set.
 - `EVENT_AREA_RADIUS`: Tiles in all directions of a discovered event. Other events/scouts in that area are considered duplicate. Defaults to 8
 - `EVENTS_API_URL`: URL to get events from (**required**)
 - `EVENTS_API_TIMEOUT`: Seconds to wait for a response from the events api url. Defaults to 5 seconds
+- `EVENTS_API_USER_AGENT`: User agent to send when fetching from events api (**required**)
 - `EVENTS_WORLD`: World to receive events from. Defaults to 444
 - `EVENTS_ALLOWED`: Allowed event types to notify. Comma-delimiter string list
-- `USER_AGENT`: User agent to send when fetching from events api (**required**)
 - `DISCORD_WEBHOOK_URLS`: Discord webhooks to post events to. Defaults to nothing. Use the optional format `<url>=<role_id>` to ping a role
 - `MAP_FILE_PATH`: Directory where map chunk image files are located. Defaults to `layers_osrs/mapsquares/-1/2`
 - `MAP_TILE_PIXELS`: Pixels per tile in the map chunk files. Defaults to 4

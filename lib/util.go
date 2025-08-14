@@ -7,6 +7,14 @@ import (
 	"strings"
 )
 
+func GetRequiredEnv(key string) string {
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		panic(fmt.Errorf("required environment variable missing: %s", key))
+	}
+	return value
+}
+
 func GetEnv(key, fallback string) string {
 	value := os.Getenv(key)
 	if len(value) == 0 {

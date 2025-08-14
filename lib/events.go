@@ -121,7 +121,9 @@ func getEvents(url string) (*EventsApiResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("User-Agent", UserAgent)
+	if len(ApiUserAgent) > 0 {
+		req.Header.Add("User-Agent", ApiUserAgent)
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err

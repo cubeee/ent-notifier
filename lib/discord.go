@@ -33,8 +33,8 @@ func NotifyEvents(events []*Event, webhookUrls []string) error {
 		}
 		imageName := fmt.Sprintf("map%d.png", num)
 
-		embeds = append(embeds, DiscordEmbed{
-			Title: event.EventType,
+		embed := DiscordEmbed{
+			Title: fmt.Sprintf("%s - World %d", event.EventType, event.World),
 			Fields: &[]DiscordEmbedField{
 				{
 					Name:   "Discovered",

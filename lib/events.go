@@ -16,6 +16,7 @@ type PastEvent struct {
 
 type Event struct {
 	EventType      string
+	World          int
 	DiscoveredTime int64
 	X              int
 	Y              int
@@ -61,6 +62,7 @@ func GetEvents(lastCheckTime int64, pastEvents []*PastEvent) (*EventsResponse, e
 
 		event := &Event{
 			EventType:      eventItem.EventType,
+			World:          eventItem.World,
 			DiscoveredTime: eventItem.DiscoveredTime,
 			X:              eventItem.X,
 			Y:              eventItem.Y,

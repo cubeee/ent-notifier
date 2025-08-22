@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"time"
 )
 
 const eventsLocation = "[Log Hunters](https://discord.com/channels/922245627092541450/1166753438177173534)"
@@ -92,6 +93,8 @@ func NotifyEvents(events []*Event, webhookUrls []string) error {
 		if err != nil {
 			fmt.Println("Failed to post to webhook url", url, err)
 		}
+
+		time.Sleep(1 * time.Second)
 	}
 	return nil
 }

@@ -14,7 +14,7 @@ import (
 
 const eventsLocation = "[Log Hunters](https://discord.com/channels/922245627092541450/1166753438177173534)"
 
-func NotifyEvents(events []*Event, webhookUrls []string) error {
+func NotifyEvents(env *Env, events []*Event, webhookUrls []string) error {
 	var embeds []DiscordEmbed
 	var files []DiscordFile
 
@@ -25,7 +25,7 @@ func NotifyEvents(events []*Event, webhookUrls []string) error {
 	for num, event := range events {
 		mapLink := fmt.Sprintf("[Map](https://mejrs.github.io/osrs?m=-1&z=4&p=0&x=%d&y=%d)", event.X, event.Y)
 
-		mapImage, err := CreateThumbnail(event.X, event.Y, MapImageWidth, MapImageHeight)
+		mapImage, err := CreateThumbnail(event.X, event.Y, env.MapImageWidth, env.MapImageHeight, env.MapTilePixels, env.MapFilePath)
 
 		buffer := new(bytes.Buffer)
 		err = png.Encode(buffer, mapImage)
@@ -52,9 +52,9 @@ func NotifyEvents(events []*Event, webhookUrls []string) error {
 				Url: fmt.Sprintf("attachment://%s", imageName),
 			},
 		}
-		if len(EmbedFooter) > 0 {
+		if len(env.EmbedFooter) > 0 {
 			embed.Footer = &DiscordFooter{
-				Text: &EmbedFooter,
+				Text: &env.EmbedFooter,
 			}
 		}
 		embeds = append(embeds, embed)

@@ -12,8 +12,8 @@ func (a *Area) IntersectsArea(other *Area) bool {
 	return a.delegate.Overlaps(other.delegate)
 }
 
-func CreateEventArea(x, y int) *Area {
+func CreateEventArea(x, y, radius int) *Area {
 	return &Area{
-		delegate: image.Rect(x-EventAreaRadius, y-EventAreaRadius, x+EventAreaRadius, y+EventAreaRadius),
+		delegate: image.Rect(x-radius, y-radius, x+radius, y+radius),
 	}
 }

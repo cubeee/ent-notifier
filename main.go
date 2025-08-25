@@ -8,12 +8,14 @@ import (
 )
 
 func main() {
+	env := lib.LoadEnv()
+
 	now := time.Now().Unix()
-	lastCheckTime := now - int64(lib.HistoryLookupSeconds)
+	lastCheckTime := now - int64(env.HistoryLookupSeconds)
 	pastEvents := make([]*lib.PastEvent, 0)
 
 	for {
-		resp, err := checkEventsLoop(lastCheckTime, pastEvents)
+		resp, err := checkEventsLoop(env, lastCheckTime, pastEvents)
 		if err != nil {
 			panic(err)
 		}
@@ -28,18 +30,22 @@ func main() {
 
 		now = time.Now().Unix()
 		pastEvents = slices.DeleteFunc(pastEvents, func(pastEvent *lib.PastEvent) bool {
-			return now-pastEvent.Time > int64(lib.PastEventMaxAge)
+			return now-pastEvent.Time > int64(env.PastEventMaxAge)
 		})
 
 		lastCheckTime = resp.LatestEventTime
-		time.Sleep(time.Duration(lib.SleepTime) * time.Second)
+		time.Sleep(time.Duration(env.SleepTime) * time.Second)
 	}
 }
 
-func checkEventsLoop(lastCheckTime int64, pastEvents []*lib.PastEvent) (*lib.EventsResponse, error) {
+func checkEventsLoop(
+	env *lib.Env,
+	lastCheckTime int64,
+	pastEvents []*lib.PastEvent,
+) (*lib.EventsResponse, error) {
 	fmt.Println("Checking events since", lastCheckTime, "- stored past events:", len(pastEvents))
 
-	eventsResponse, err := lib.GetEvents(lastCheckTime, pastEvents)
+	eventsResponse, err := lib.GetEvents(env, lastCheckTime, pastEvents)
 	if err != nil {
 		panic(err)
 	}
@@ -50,7 +56,7 @@ func checkEventsLoop(lastCheckTime int64, pastEvents []*lib.PastEvent) (*lib.Eve
 
 	if len(eventsResponse.NewEvents) > 0 {
 		fmt.Println("\tNew events:", len(eventsResponse.NewEvents))
-		err := lib.NotifyEvents(eventsResponse.NewEvents, lib.WebhookUrls)
+		err := lib.NotifyEvents(env, eventsResponse.NewEvents, env.WebhookUrls)
 		if err != nil {
 			return nil, err
 		}

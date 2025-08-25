@@ -40,8 +40,12 @@ type EventsApiResponse struct {
 	Items []EventsApiEvent `json:"items"`
 }
 
-func GetEvents(lastCheckTime int64, pastEvents []*PastEvent) (*EventsResponse, error) {
-	response, err := getEvents(ApiUrl)
+func GetEvents(
+	env *Env,
+	lastCheckTime int64,
+	pastEvents []*PastEvent,
+) (*EventsResponse, error) {
+	response, err := getEvents(env.ApiUrl, env.ApiTimeout, env.ApiUserAgent)
 	if err != nil {
 		return nil, err
 	}
@@ -52,11 +56,11 @@ func GetEvents(lastCheckTime int64, pastEvents []*PastEvent) (*EventsResponse, e
 			continue
 		}
 
-		if eventItem.World != EventsWorld {
+		if eventItem.World != env.EventsWorld {
 			continue
 		}
 
-		if !slices.Contains(EventsAllowed, eventItem.EventType) {
+		if !slices.Contains(env.EventsAllowed, eventItem.EventType) {
 			continue
 		}
 
@@ -66,14 +70,14 @@ func GetEvents(lastCheckTime int64, pastEvents []*PastEvent) (*EventsResponse, e
 			DiscoveredTime: eventItem.DiscoveredTime,
 			X:              eventItem.X,
 			Y:              eventItem.Y,
-			Area:           CreateEventArea(eventItem.X, eventItem.Y),
+			Area:           CreateEventArea(eventItem.X, eventItem.Y, env.EventAreaRadius),
 		}
 
-		if overlapsEvent(event, events) {
+		if overlapsEvent(event, events, env.LocationCooldown) {
 			continue
 		}
 
-		if overlapsPastEvent(event, pastEvents) {
+		if overlapsPastEvent(event, pastEvents, env.LocationCooldown) {
 			continue
 		}
 
@@ -93,36 +97,36 @@ func GetEvents(lastCheckTime int64, pastEvents []*PastEvent) (*EventsResponse, e
 	}, nil
 }
 
-func overlapsEvent(event *Event, otherEvents []*Event) bool {
+func overlapsEvent(event *Event, otherEvents []*Event, locationCooldown int) bool {
 	for i, _ := range otherEvents {
 		other := *otherEvents[i]
-		if event.EventType == other.EventType && (event.DiscoveredTime-other.DiscoveredTime < int64(LocationCooldown)) && event.Area.IntersectsArea(other.Area) {
+		if event.EventType == other.EventType && (event.DiscoveredTime-other.DiscoveredTime < int64(locationCooldown)) && event.Area.IntersectsArea(other.Area) {
 			return true
 		}
 	}
 	return false
 }
 
-func overlapsPastEvent(event *Event, otherEvents []*PastEvent) bool {
+func overlapsPastEvent(event *Event, otherEvents []*PastEvent, locationCooldown int) bool {
 	for i, _ := range otherEvents {
 		other := *otherEvents[i]
-		if event.EventType == other.EventType && (event.DiscoveredTime-other.Time < int64(LocationCooldown)) && event.Area.IntersectsArea(other.Area) {
+		if event.EventType == other.EventType && (event.DiscoveredTime-other.Time < int64(locationCooldown)) && event.Area.IntersectsArea(other.Area) {
 			return true
 		}
 	}
 	return false
 }
 
-func getEvents(url string) (*EventsApiResponse, error) {
+func getEvents(url string, timeout int, userAgent string) (*EventsApiResponse, error) {
 	client := http.Client{
-		Timeout: time.Second * time.Duration(ApiTimeout),
+		Timeout: time.Second * time.Duration(timeout),
 	}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
-	if len(ApiUserAgent) > 0 {
-		req.Header.Add("User-Agent", ApiUserAgent)
+	if len(userAgent) > 0 {
+		req.Header.Add("User-Agent", userAgent)
 	}
 	res, err := client.Do(req)
 	if err != nil {

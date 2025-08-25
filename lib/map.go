@@ -9,12 +9,12 @@ import (
 	"os"
 )
 
-func CreateThumbnail(x, y, width, height int) (*image.RGBA, error) {
+func CreateThumbnail(x, y, width, height, tilePixels int, mapFilePath string) (*image.RGBA, error) {
 	chunkX := (x >> 3) / 8
 	chunkY := (y >> 3) / 8
 
-	chunksImage := createCombinedChunksImage(chunkX, chunkY)
-	croppedImage := createCroppedImage(x, y, chunkX, chunkY, width, height, chunksImage)
+	chunksImage := createCombinedChunksImage(chunkX, chunkY, tilePixels, mapFilePath)
+	croppedImage := createCroppedImage(x, y, chunkX, chunkY, tilePixels, width, height, chunksImage)
 	drawCrossHair(croppedImage)
 
 	scaled := image.NewRGBA(image.Rect(0, 0, croppedImage.Bounds().Max.X*2, croppedImage.Bounds().Max.Y*2))
@@ -50,14 +50,14 @@ func drawCrossHair(img *image.RGBA) {
 	}
 }
 
-func createCroppedImage(x, y, chunkX, chunkY, width, height int, img *image.RGBA) *image.RGBA {
+func createCroppedImage(x, y, chunkX, chunkY, tilePixels, width, height int, img *image.RGBA) *image.RGBA {
 	minX := ((chunkX - 1) << 3) * 8
 	minY := ((chunkY - 1) << 3) * 8
 
 	mapHeight := img.Bounds().Dy()
 
-	mapX := ((x - minX) * MapTilePixels) - MapTilePixels
-	mapY := (mapHeight - (y-minY)*MapTilePixels) - MapTilePixels
+	mapX := ((x - minX) * tilePixels) - tilePixels
+	mapY := (mapHeight - (y-minY)*tilePixels) - tilePixels
 
 	imageCoords := image.Rect(mapX-(width/2), mapY+(height/2), mapX+(width/2), mapY-(height/2))
 	subImage := img.SubImage(imageCoords)
@@ -68,8 +68,8 @@ func createCroppedImage(x, y, chunkX, chunkY, width, height int, img *image.RGBA
 	return baseImage
 }
 
-func createCombinedChunksImage(chunkX, chunkY int) *image.RGBA {
-	chunkImageSize := 64 * MapTilePixels
+func createCombinedChunksImage(chunkX, chunkY, tilePixels int, mapFilePath string) *image.RGBA {
+	chunkImageSize := 64 * tilePixels
 	surroundingChunks := 1
 	chunks := 1 + (surroundingChunks * 2)
 
@@ -77,7 +77,7 @@ func createCombinedChunksImage(chunkX, chunkY int) *image.RGBA {
 
 	for imageChunkX := -surroundingChunks; imageChunkX <= surroundingChunks; imageChunkX++ {
 		for imageChunkY := surroundingChunks; imageChunkY >= -surroundingChunks; imageChunkY-- {
-			chunkImage, err := loadChunkFile(chunkX+imageChunkX, chunkY-imageChunkY)
+			chunkImage, err := loadChunkFile(chunkX+imageChunkX, chunkY-imageChunkY, mapFilePath)
 			if err != nil {
 				continue
 			}
@@ -100,8 +100,8 @@ func createCombinedChunksImage(chunkX, chunkY int) *image.RGBA {
 	return baseImage
 }
 
-func loadChunkFile(x, y int) (*image.Image, error) {
-	imageFile, err := os.Open(fmt.Sprintf("%s/0_%d_%d.png", MapFilePath, x, y))
+func loadChunkFile(x, y int, mapFilePath string) (*image.Image, error) {
+	imageFile, err := os.Open(fmt.Sprintf("%s/0_%d_%d.png", mapFilePath, x, y))
 	if err != nil {
 		return nil, err
 	}

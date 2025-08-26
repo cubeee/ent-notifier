@@ -2,6 +2,7 @@ package lib
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -24,6 +25,7 @@ type Env struct {
 	HistoryLookupSeconds int
 	WebhookUrls          []string
 	PastEventMaxAge      int
+	MappedLocationsFile  string
 }
 
 func LoadEnv() *Env {
@@ -44,6 +46,7 @@ func LoadEnv() *Env {
 		HistoryLookupSeconds: GetEnvInt("HISTORY_LOOKUP_SECONDS", 0),
 		WebhookUrls:          GetEnvList("DISCORD_WEBHOOK_URLS", ","),
 		PastEventMaxAge:      GetEnvInt("PAST_EVENT_MAX_AGE", 30*60),
+		MappedLocationsFile:  os.Getenv("MAPPED_LOCATIONS_FILE"),
 	}
 }
 
@@ -67,7 +70,7 @@ func GetEnvInt(key string, fallback int) int {
 	value := GetEnv(key, strconv.Itoa(fallback))
 	intValue, err := strconv.Atoi(value)
 	if err != nil {
-		fmt.Println("Failed to read env var into an int")
+		log.Println("Failed to read env var into an int")
 		panic(err)
 	}
 	return intValue

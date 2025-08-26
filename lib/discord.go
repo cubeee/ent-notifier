@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"image/png"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"sort"
@@ -34,20 +35,38 @@ func NotifyEvents(env *Env, events []*Event, webhookUrls []string) error {
 		}
 		imageName := fmt.Sprintf("map%d.png", num)
 
-		embed := DiscordEmbed{
-			Title: fmt.Sprintf("%s - World %d", event.EventType, event.World),
-			Fields: &[]DiscordEmbedField{
-				{
-					Name:   "Discovered",
-					Value:  fmt.Sprintf("<t:%d:R>", event.DiscoveredTime),
-					Inline: true,
-				},
-				{
-					Name:   "Links",
-					Value:  fmt.Sprintf("%s\n%s", eventsLocation, mapLink),
-					Inline: true,
-				},
+		fields := []DiscordEmbedField{
+			{
+				Name:   "Discovered",
+				Value:  fmt.Sprintf("<t:%d:R>", event.DiscoveredTime),
+				Inline: true,
 			},
+		}
+
+		if event.MappedLocation != nil {
+			fields = append(fields, DiscordEmbedField{
+				Name:   "Location",
+				Value:  event.MappedLocation.Name,
+				Inline: true,
+			})
+			if len(event.MappedLocation.Teleports) > 0 {
+				fields = append(fields, DiscordEmbedField{
+					Name:   "Teleports",
+					Value:  strings.Join(event.MappedLocation.Teleports, "\n"),
+					Inline: true,
+				})
+			}
+		}
+
+		fields = append(fields, DiscordEmbedField{
+			Name:   "Links",
+			Value:  fmt.Sprintf("%s\n%s", eventsLocation, mapLink),
+			Inline: false,
+		})
+
+		embed := DiscordEmbed{
+			Title:  fmt.Sprintf("%s - World %d", event.EventType, event.World),
+			Fields: &fields,
 			Image: &DiscordEmbedImage{
 				Url: fmt.Sprintf("attachment://%s", imageName),
 			},
@@ -91,7 +110,7 @@ func NotifyEvents(env *Env, events []*Event, webhookUrls []string) error {
 
 		err := postMessage(webhookUrl, message)
 		if err != nil {
-			fmt.Println("Failed to post to webhook url", url, err)
+			log.Println("failed to post to webhook url", url, err)
 		}
 
 		time.Sleep(1 * time.Second)

@@ -4,3 +4,4 @@
 *.iml
 publish.sh
 /*.png
+locations.json

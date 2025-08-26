@@ -3,6 +3,7 @@ package lib
 import (
 	"encoding/json"
 	"io"
+	"math"
 	"net/http"
 	"slices"
 	"time"
@@ -21,6 +22,7 @@ type Event struct {
 	X              int
 	Y              int
 	Area           *Area
+	MappedLocation *MappedLocation
 }
 
 type EventsResponse struct {
@@ -40,9 +42,18 @@ type EventsApiResponse struct {
 	Items []EventsApiEvent `json:"items"`
 }
 
+type MappedLocation struct {
+	Name      string   `json:"name"`
+	X         int      `json:"x"`
+	Y         int      `json:"y"`
+	Radius    int      `json:"radius"`
+	Teleports []string `json:"teleports"`
+}
+
 func GetEvents(
 	env *Env,
 	lastCheckTime int64,
+	mappedLocations []*MappedLocation,
 	pastEvents []*PastEvent,
 ) (*EventsResponse, error) {
 	response, err := getEvents(env.ApiUrl, env.ApiTimeout, env.ApiUserAgent)
@@ -71,6 +82,7 @@ func GetEvents(
 			X:              eventItem.X,
 			Y:              eventItem.Y,
 			Area:           CreateEventArea(eventItem.X, eventItem.Y, env.EventAreaRadius),
+			MappedLocation: GetMappedLocation(eventItem.X, eventItem.Y, mappedLocations),
 		}
 
 		if overlapsEvent(event, events, env.LocationCooldown) {
@@ -115,6 +127,22 @@ func overlapsPastEvent(event *Event, otherEvents []*PastEvent, locationCooldown 
 		}
 	}
 	return false
+}
+
+func GetMappedLocation(x int, y int, mappedLocations []*MappedLocation) *MappedLocation {
+	var closestLocation *MappedLocation
+	closestDistance := 1_000_000.0
+
+	for _, location := range mappedLocations {
+		xDiff := math.Abs(float64(location.X - x))
+		yDiff := math.Abs(float64(location.Y - y))
+		avg := (xDiff + yDiff) / 2
+		if avg < closestDistance && avg < float64(location.Radius) {
+			closestLocation = location
+			closestDistance = math.Min(xDiff, yDiff)
+		}
+	}
+	return closestLocation
 }
 
 func getEvents(url string, timeout int, userAgent string) (*EventsApiResponse, error) {

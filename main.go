@@ -58,6 +58,9 @@ func checkEventsLoop(
 
 	for _, newEvent := range eventsResponse.NewEvents {
 		log.Println(newEvent.DiscoveredTime, newEvent.X, newEvent.Y, newEvent.Area)
+		if newEvent.MappedLocation == nil {
+			log.Printf("\tunmapped location: %d,%d", newEvent.X, newEvent.Y)
+		}
 	}
 
 	if len(eventsResponse.NewEvents) > 0 {
